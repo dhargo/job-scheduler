@@ -5,7 +5,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
 class Job implements Comparable<Job> {
+
     private static final AtomicLong seq = new AtomicLong(0);
+
     private final Callable task;
     private final LocalDateTime time;
     private final long seqNum;

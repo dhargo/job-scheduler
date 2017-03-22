@@ -16,46 +16,26 @@ import java.util.logging.Logger;
  *
  * Комментарий:
  * В условии есть важное замечание "Задачи должны выполняться ... в порядке прихода события для равных LocalDateTime",
- * поэтому нельзя так просто взять и использовать ScheduledThreadPoolExecutor.
+ * поэтому нельзя так просто взять и использовать ScheduledThreadPoolExecutor - очевидно есть строгое требование
+ * выполнять задачи в порядке прихода, поэтому в решении используется один поток для выполнения задач.
  */
 public class SimpleFutureJobService implements FutureJobService {
 
     private final static Logger LOGGER = Logger.getLogger(SimpleFutureJobService.class.getName());
 
     private final PriorityBlockingQueue<Job> queue = new PriorityBlockingQueue<>();
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    private final Thread processor = new Thread(() -> {
-        while (!Thread.interrupted()) {
-            try {
-                Job job = queue.take();
-                if (job.getTime().isBefore(LocalDateTime.now()) || job.getTime().isEqual(LocalDateTime.now())) {
-                    LOGGER.log(Level.FINEST, String.format("execute job for %s", job.getTime()));
-                    executor.submit(job.getTask());
-                } else {
-                    queue.offer(job);
-                    synchronized (this) {
-                        long delay = ChronoUnit.MILLIS.between(LocalDateTime.now(), job.getTime());
-                        LOGGER.log(Level.FINEST, String.format("too early for %s - wait %s ms", job.getTime(), delay));
-                        wait(delay);
-                    }
-                }
-            } catch (InterruptedException e) {
-                //TODO: сделать сохранение очереди при завершении работы
-            }
-        }
-    }, "Job Processor");
+    private final JobProcessor jobProcessor = new JobProcessor(queue, "JobProcessor");
 
     public SimpleFutureJobService() {
-        processor.start();
+        jobProcessor.start();
     }
 
     @Override
     public void schedule(LocalDateTime executeAt, Callable task) {
         LOGGER.log(Level.FINEST, String.format("schedule job to run at %s", executeAt));
         queue.offer(new Job(task, executeAt));
-        synchronized (processor) {
-            processor.notify();
+        synchronized (jobProcessor) {
+            jobProcessor.notify();
         }
     }
 
