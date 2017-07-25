@@ -19,7 +19,7 @@ public class SimpleFutureJobServiceTest {
     @Before
     public void setUp() throws Exception {
         jobService = new SimpleFutureJobService();
-        testResult = new LinkedList<>();
+        testResult = new ConcurrentLinkedQueue<>();
     }
 
     @org.junit.Test
@@ -77,7 +77,7 @@ public class SimpleFutureJobServiceTest {
     }
 
     private class TestTask implements Callable {
-        int x;
+        private int x;
 
         TestTask(int x) {
             this.x = x;
@@ -91,8 +91,8 @@ public class SimpleFutureJobServiceTest {
     }
 
     private class Tester implements Runnable {
-        Queue<Integer> sharedQueue;
-        LocalDateTime executeAt;
+        private Queue<Integer> sharedQueue;
+        private LocalDateTime executeAt;
 
         Tester(Queue<Integer> sharedQueue, LocalDateTime executeAt) {
             this.sharedQueue = sharedQueue;

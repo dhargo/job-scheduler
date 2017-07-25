@@ -18,11 +18,11 @@ class Job implements Comparable<Job> {
         this.seqNum = seq.getAndIncrement();
     }
 
-    Callable getTask() {
+    public Callable getTask() {
         return task;
     }
 
-    LocalDateTime getTime() {
+    public LocalDateTime getTime() {
         return time;
     }
 
