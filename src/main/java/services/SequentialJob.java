@@ -4,7 +4,11 @@ import java.time.LocalDateTime;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
-class Job implements Comparable<Job> {
+/**
+ * Обеспечивает упорядоченность выполнения задач при помощи интерфейса {@link Comparable}, и использовании
+ * в методе {@link #compareTo(SequentialJob)} серийного номера ({@link #seq}).
+ * */
+class SequentialJob implements Comparable<SequentialJob> {
 
     private static final AtomicLong seq = new AtomicLong(0);
 
@@ -12,7 +16,7 @@ class Job implements Comparable<Job> {
     private final LocalDateTime time;
     private final long seqNum;
 
-    Job(Callable task, LocalDateTime time) {
+    SequentialJob(Callable task, LocalDateTime time) {
         this.task = task;
         this.time = time;
         this.seqNum = seq.getAndIncrement();
@@ -27,7 +31,7 @@ class Job implements Comparable<Job> {
     }
 
     @Override
-    public int compareTo(Job that) {
+    public int compareTo(SequentialJob that) {
         int result = this.time.compareTo(that.time);
         if (result == 0) result = Long.compare(this.seqNum, that.seqNum);
         return result;

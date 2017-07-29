@@ -1,9 +1,10 @@
 package services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.LocalDateTime;
 import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Задача:
@@ -20,9 +21,9 @@ import java.util.logging.Logger;
  */
 public class SimpleFutureJobService implements FutureJobService {
 
-    private final static Logger LOGGER = Logger.getLogger(SimpleFutureJobService.class.getName());
+    private final static Logger LOGGER = LoggerFactory.getLogger(SimpleFutureJobService.class);
 
-    private final PriorityBlockingQueue<Job> queue = new PriorityBlockingQueue<>();
+    private final PriorityBlockingQueue<SequentialJob> queue = new PriorityBlockingQueue<>();
     private final JobProcessor jobProcessor = new JobProcessor(queue, "JobProcessor");
 
     public SimpleFutureJobService() {
@@ -31,8 +32,8 @@ public class SimpleFutureJobService implements FutureJobService {
 
     @Override
     public void schedule(LocalDateTime executeAt, Callable task) {
-        LOGGER.log(Level.FINEST, String.format("schedule job to run at %s", executeAt));
-        queue.offer(new Job(task, executeAt));
+        LOGGER.debug("schedule job to run at {}", executeAt);
+        queue.offer(new SequentialJob(task, executeAt));
         synchronized (jobProcessor) {
             jobProcessor.notify();
         }
