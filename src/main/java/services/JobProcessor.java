@@ -27,7 +27,7 @@ public class JobProcessor extends Thread {
 
     @Override
     public void run() {
-        while (!Thread.interrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 SequentialJob job = queue.take();
                 long delay = ChronoUnit.MILLIS.between(LocalDateTime.now(), job.getTime());
@@ -42,11 +42,13 @@ public class JobProcessor extends Thread {
                     }
                 }
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 LOGGER.info("Interrupted");
             } finally {
                 //TODO: сделать сохранение очереди при завершении работы
             }
         }
+        LOGGER.info("Stopped");
     }
 
 }
